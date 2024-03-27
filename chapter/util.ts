@@ -94,7 +94,8 @@ export class PathFinder {
     // 检查
     check() {
         const selected = this._selected
-        const multiple = selected.reduce((pre, cur) => pre * cur,  1)
+        const multiple = selected.reduce((pre, cur) => pre * cur, 1)
+
         for (let i = 0; i < this.currentSelectedList.length; i++) { 
             const row = this.currentSelectedList[i]
             
@@ -106,12 +107,17 @@ export class PathFinder {
                     // 获取是否可以获取
                     for (let k = 0; k < this.selectedSkuList.length; k++) {
                         if (!(this.selectedSkuList[k] % (multiple * row[j]))) {
+                            console.log(this.selectedSkuList[k], 'this.selectedSkuList[k]')
+                            console.log(multiple, 'multiple')
+                            console.log(row[j], 'row[j]')
+                            console.log('***************')
                             row[j] = 1
                             break
                         } 
                     }
                 }
             }
+
         }
     }
 
@@ -126,9 +132,12 @@ export class PathFinder {
         }
 
         this._selected.push(this.skuList[x][y])
+        debugger
         this.check()
         return false
     }
+
+    delete(x: number, y: number) {}
 
 
 }

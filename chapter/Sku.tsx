@@ -70,7 +70,8 @@ function Sku(props: SkuProps) {
             draft[index] = val.target.value
         }))
 
-        // pathFinder.add(...pathFinder._primeToIndexObj(primeObj.skuPrimeObj[val.target.value]))
+        pathFinder.add(...pathFinder._primeToIndexObj[primeObj.skuPrimeObj[val.target.value]])
+        setPathFinder(pathFinder)
     }
 
     console.log(pathFinder, 'pathFinder')
@@ -85,7 +86,7 @@ function Sku(props: SkuProps) {
                         value={selectedObj[skuItem.value]}
                     >
                         {
-                            skuItem.list.map((item, colIndex) => <Radio.Button disabled={ pathFinder?.currentSelectedList[rowIndex][colIndex] } value={item}>{item}</Radio.Button>)
+                            skuItem.list.map((item, colIndex) => <Radio.Button disabled={ !pathFinder?.currentSelectedList?.[rowIndex]?.[colIndex] } value={item}>{item}</Radio.Button>)
                         }
                     </Radio.Group>
                 </Form.Item>)
