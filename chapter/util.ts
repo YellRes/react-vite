@@ -33,9 +33,9 @@ export const traverse = (arr: Array<Array<string>>) => {
  * */ 
 export const getPrimeList = (num: number) => { 
     const result = []
-    let index = 1
+    let index = 2
 
-    result.push(1)
+    result.push(2)
     while (result.length < num) { 
 
         // 找到下一个素数
@@ -62,7 +62,76 @@ export const getPrimeList = (num: number) => {
     return result 
 }
 
+export class PathFinder {
+    skuList: Array<Array<number>>
+    // 已选中 2 可以选择 1 不可选择 0
+    currentSelectedList: Array<Array<number>>
+    
+    selectedSkuList: Array<number>
+    _primeToIndexObj: Record<number, Array<number>>
+    _selected: Array<number>
 
+    constructor(skuList, selectedSkuList) { 
+        this.skuList = skuList
+        this.selectedSkuList = selectedSkuList
+
+        this.currentSelectedList = structuredClone(skuList)
+        this._primeToIndexObj = {}
+        this._selected = []
+        this.init()
+    }
+
+    init() { 
+        for (let i = 0; i < this.currentSelectedList.length; i++) { 
+            const row = this.currentSelectedList[i]
+            for (let j = 0; j < row.length; j++) { 
+                this._primeToIndexObj[row[j]] = [i, j]
+                row[j] = 1
+            }
+        }
+    }
+
+    // 检查
+    check() {
+        const selected = this._selected
+        const multiple = selected.reduce((pre, cur) => pre * cur,  1)
+        for (let i = 0; i < this.currentSelectedList.length; i++) { 
+            const row = this.currentSelectedList[i]
+            
+            for (let j = 0; j < row.length; j++) { 
+                if (row[j] === 2) {
+                    continue
+                } else { 
+                    row[j] = 0
+                    // 获取是否可以获取
+                    for (let k = 0; k < this.selectedSkuList.length; k++) {
+                        if (!(this.selectedSkuList[k] % (multiple * row[j]))) {
+                            row[j] = 1
+                            break
+                        } 
+                    }
+                }
+            }
+        }
+    }
+
+    add(x: number, y: number) {
+        this.currentSelectedList[x][y] = 2
+
+        for (let i = 0; i < this._selected.length; i++) {
+            if (this._primeToIndexObj[this._selected[i]][0] === x) { 
+                this._selected = [this.skuList[x][y]]
+                return true
+            }
+        }
+
+        this._selected.push(this.skuList[x][y])
+        this.check()
+        return false
+    }
+
+
+}
 
 
 

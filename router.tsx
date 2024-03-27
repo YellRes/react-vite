@@ -7,17 +7,17 @@ const props = {
     skuList: [
         {
             name: '颜色',
-            label: 'color',
+            value: 'color',
             list: ['黑色', '白色']
         },
         {
             name: '性别',
-            label: 'gender',
+            value: 'gender',
             list: ['男裤', '女裤']
         },
         {
             name: '尺码',
-            label: 'size',
+            value: 'size',
             list: ['S', 'L']
         },
     ],

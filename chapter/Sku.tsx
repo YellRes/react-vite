@@ -1,6 +1,7 @@
 import { Radio, Form } from 'antd'
-import { useEffect, useState } from 'react'
-import { traverse, getPrimeList } from './util'
+import { useEffect, useRef, useState } from 'react'
+import { produce } from 'immer'
+import { traverse, getPrimeList, PathFinder } from './util'
 interface SkuProps {
     skuList?: Array<{
         name: string
@@ -20,13 +21,24 @@ function Sku(props: SkuProps) {
         skuPrimeObj: {},
         availablePrimeList: [] as Array<number>
     })
+    // 选中的数据
+    const [selectedObj, setSelectedObj] = useState<Record<any, string>>({})
+
+    // pathFinder 对象
+    const [pathFinder, setPathFinder] = useState<PathFinder>()
 
     // 当前可选择的所有列表
     useEffect(() => { 
-        setAllList(traverse(skuList.reduce((pre, cur) => { 
+        setAllList(skuList.reduce((pre, cur) => { 
             pre.push(cur.list)
             return pre
-        }, [] as Array<Array<string>>)))
+        }, [] as Array<Array<string>>))
+
+        setSelectedObj(skuList.reduce((pre, cur) => { 
+            pre[cur.value] = []
+            return pre
+        }, {}))
+
     }, [skuList])
 
     // 通过质数 生成sku的值
@@ -47,16 +59,33 @@ function Sku(props: SkuProps) {
         
     }, [availableList, skuList])
 
-    console.log(primeObj, 'primeObj')
-    console.log(availableList, 'primeObj')
-    
+    useEffect(() => {
+        setPathFinder(new PathFinder(allList.map(list => list.map((item: any) => { 
+            return primeObj.skuPrimeObj[item]
+        })), primeObj.availablePrimeList))
+    }, [allList, primeObj])
+
+    const handleChange = (val: Event, index: string) => { 
+        setSelectedObj(produce(selectedObj, draft => { 
+            draft[index] = val.target.value
+        }))
+
+        // pathFinder.add(...pathFinder._primeToIndexObj(primeObj.skuPrimeObj[val.target.value]))
+    }
+
+    console.log(pathFinder, 'pathFinder')
+
     return <>
+
         <Form>
             {
-                skuList.map(skuItem => <Form.Item label={skuItem.name} name={skuItem.value}>
-                    <Radio.Group>
+                skuList.map((skuItem, rowIndex) => <Form.Item label={skuItem.name} name={skuItem.value}>
+                    <Radio.Group
+                        onChange={(val) => handleChange(val, skuItem.value)}
+                        value={selectedObj[skuItem.value]}
+                    >
                         {
-                            skuItem.list.map(item => <Radio.Button value={item}>{item}</Radio.Button>)
+                            skuItem.list.map((item, colIndex) => <Radio.Button disabled={ pathFinder?.currentSelectedList[rowIndex][colIndex] } value={item}>{item}</Radio.Button>)
                         }
                     </Radio.Group>
                 </Form.Item>)
