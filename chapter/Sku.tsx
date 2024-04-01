@@ -1,4 +1,4 @@
-import { Radio, Form } from 'antd'
+import { Checkbox, Form } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { produce } from 'immer'
 import { traverse, getPrimeList, PathFinder } from './util'
@@ -65,12 +65,23 @@ function Sku(props: SkuProps) {
         })), primeObj.availablePrimeList))
     }, [allList, primeObj])
 
-    const handleChange = (val: Event, index: string) => { 
+    const handleChange = (val, index: string) => { 
+     
+
+        const [x, y]: any = pathFinder._primeToIndexObj[primeObj.skuPrimeObj[val]]
+
+        console.log(x, y, val, 'changed')
+        const valToPrime = primeObj.skuPrimeObj[val]
+        if (!pathFinder._selected.includes(valToPrime)) { 
+            pathFinder.add(x, y)
+        } else {
+            pathFinder.delete(x, y)
+        }
+
         setSelectedObj(produce(selectedObj, draft => { 
-            draft[index] = val.target.value
+            draft[index] =  draft[index] == val ? [] :  val 
         }))
 
-        pathFinder.add(...pathFinder._primeToIndexObj[primeObj.skuPrimeObj[val.target.value]])
         setPathFinder(pathFinder)
     }
 
@@ -80,22 +91,26 @@ function Sku(props: SkuProps) {
 
         <Form>
             {
-                skuList.map((skuItem, rowIndex) => <Form.Item label={skuItem.name} name={skuItem.value}>
-                    <Radio.Group
-                        onChange={(val) => handleChange(val, skuItem.value)}
-                        value={selectedObj[skuItem.value]}
-                    >
-                        {
-                            skuItem.list.map((item, colIndex) => <Radio.Button disabled={ !pathFinder?.currentSelectedList?.[rowIndex]?.[colIndex] } value={item}>{item}</Radio.Button>)
-                        }
-                    </Radio.Group>
+                skuList.map((skuItem, rowIndex) => <Form.Item label={skuItem.name} name={skuItem.value} key={rowIndex}>
+                    {
+                        skuItem.list.map<React.ReactNode>((item, colIndex) => (
+                        <Checkbox
+                            key={item}
+                            checked={selectedObj[skuItem.value]?.includes(item)}
+                            onChange={() => handleChange(item, skuItem.value)}
+                            disabled={!pathFinder?.currentSelectedList?.[rowIndex]?.[colIndex]}
+                            >
+                            {item}
+                            </Checkbox>
+                        ))
+                    }
                 </Form.Item>)
             }
 
 
             <Form.Item label='当前可选择的组合'>
                 {
-                    availableList.map(item => <Radio.Button value={item.join(',')}>{item.join(',')}</Radio.Button>)
+                    availableList.map(item => <Checkbox  key={item.join(',')}>{item.join(',')}</Checkbox>)
                 }
             </Form.Item>
 

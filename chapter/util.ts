@@ -98,6 +98,7 @@ export class PathFinder {
 
         for (let i = 0; i < this.currentSelectedList.length; i++) { 
             const row = this.currentSelectedList[i]
+            const primeRow = this.skuList[i]
             
             for (let j = 0; j < row.length; j++) { 
                 if (row[j] === 2) {
@@ -106,7 +107,9 @@ export class PathFinder {
                     row[j] = 0
                     // 获取是否可以获取
                     for (let k = 0; k < this.selectedSkuList.length; k++) {
-                        if (!(this.selectedSkuList[k] % (multiple * row[j]))) {
+                        console.log(`i:${i}, j:${j}, multiple:${multiple}, prime:${primeRow[j]}`)
+
+                        if (!(this.selectedSkuList[k] % (multiple * primeRow[j]))) {
                             console.log(this.selectedSkuList[k], 'this.selectedSkuList[k]')
                             console.log(multiple, 'multiple')
                             console.log(row[j], 'row[j]')
@@ -123,23 +126,35 @@ export class PathFinder {
 
     add(x: number, y: number) {
         this.currentSelectedList[x][y] = 2
+        let hasSameLine = false
 
         for (let i = 0; i < this._selected.length; i++) {
             if (this._primeToIndexObj[this._selected[i]][0] === x) { 
                 this._selected = [this.skuList[x][y]]
-                return true
+                hasSameLine = true
+                break
             }
         }
 
         this._selected.push(this.skuList[x][y])
-        debugger
         this.check()
-        return false
+        return hasSameLine
     }
 
-    delete(x: number, y: number) {}
+    delete(x: number, y: number) {
+        this.currentSelectedList[x][y] = 1
 
+        for (let i = 0; i < this._selected.length; i++) { 
+            if (this._selected[i] === this.skuList[x][y]) { 
+                this._selected.splice(i, 1)
+                break
+            }
+        }
 
+        console.log(this._selected, 'deleted')
+
+        this.check()
+    }
 }
 
 
