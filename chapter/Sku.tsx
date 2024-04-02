@@ -15,24 +15,30 @@ function Sku(props: SkuProps) {
 
     const { skuList = [], availableList = [] } = props
     // 所有的sku组合
-    const [allList, setAllList] = useState<Array<Array<string>>>([])
+    // const [allList, setAllList] = useState<Array<Array<string>>>([])
     // 质数相关
-    const [primeObj, setPrimeObj] = useState({
-        skuPrimeObj: {},
-        availablePrimeList: [] as Array<number>
-    })
+    // const [primeObj, setPrimeObj] = useState({
+    //     skuPrimeObj: {},
+    //     availablePrimeList: [] as Array<number>
+    // })
     // 选中的数据
     const [selectedObj, setSelectedObj] = useState<Record<any, string>>({})
 
     // pathFinder 对象
     const [pathFinder, setPathFinder] = useState<PathFinder>()
 
+    const allList = skuList.reduce((pre, cur) => { 
+        pre.push(cur.list)
+        return pre
+    }, [] as Array<Array<string>>)
+
     // 当前可选择的所有列表
     useEffect(() => { 
-        setAllList(skuList.reduce((pre, cur) => { 
-            pre.push(cur.list)
-            return pre
-        }, [] as Array<Array<string>>))
+        
+        // setAllList(skuList.reduce((pre, cur) => { 
+        //     pre.push(cur.list)
+        //     return pre
+        // }, [] as Array<Array<string>>))
 
         setSelectedObj(skuList.reduce((pre, cur) => { 
             pre[cur.value] = []
@@ -42,35 +48,48 @@ function Sku(props: SkuProps) {
     }, [skuList])
 
     // 通过质数 生成sku的值
-    useEffect(() => {
-        const allSkuArr = skuList.reduce((pre, cur) => [...pre, ...cur.list], [] as Array<string>)
-        const primeArr = getPrimeList(allSkuArr.length)
-        const skuPrimeObj = allSkuArr.reduce((pre, cur, index) => ({
-            [cur]: primeArr[index],
-            ...pre
-        }), {})
 
-        setPrimeObj({
-            skuPrimeObj,
-            availablePrimeList: availableList.map(list => list.reduce((pre, cur) => { 
-                return pre *  skuPrimeObj[cur]
-            }, 1))
-        })
+    const allSkuArr = skuList.reduce((pre, cur) => [...pre, ...cur.list], [] as Array<string>)
+    const primeArr = getPrimeList(allSkuArr.length)
+    const skuPrimeObj = allSkuArr.reduce((pre, cur, index) => ({
+        [cur]: primeArr[index],
+        ...pre
+    }), {})
+
+    const primeObj = {
+        skuPrimeObj,
+        availablePrimeList: availableList.map(list => list.reduce((pre, cur) => { 
+            return pre *  skuPrimeObj[cur]
+        }, 1))
+    }
+    // useEffect(() => {
+        // const allSkuArr = skuList.reduce((pre, cur) => [...pre, ...cur.list], [] as Array<string>)
+        // const primeArr = getPrimeList(allSkuArr.length)
+        // const skuPrimeObj = allSkuArr.reduce((pre, cur, index) => ({
+        //     [cur]: primeArr[index],
+        //     ...pre
+        // }), {})
+
+        // setPrimeObj({
+        //     skuPrimeObj,
+        //     availablePrimeList: availableList.map(list => list.reduce((pre, cur) => { 
+        //         return pre *  skuPrimeObj[cur]
+        //     }, 1))
+        // })
         
-    }, [availableList, skuList])
+    // }, [availableList, skuList])
 
     useEffect(() => {
         setPathFinder(new PathFinder(allList.map(list => list.map((item: any) => { 
             return primeObj.skuPrimeObj[item]
         })), primeObj.availablePrimeList))
-    }, [allList, primeObj])
+    }, [allList])
 
     const handleChange = (val, index: string) => { 
      
 
         const [x, y]: any = pathFinder._primeToIndexObj[primeObj.skuPrimeObj[val]]
 
-        console.log(x, y, val, 'changed')
         const valToPrime = primeObj.skuPrimeObj[val]
         if (!pathFinder._selected.includes(valToPrime)) { 
             pathFinder.add(x, y)
@@ -85,7 +104,6 @@ function Sku(props: SkuProps) {
         setPathFinder(pathFinder)
     }
 
-    console.log(pathFinder, 'pathFinder')
 
     return <>
 
